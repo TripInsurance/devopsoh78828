@@ -1,0 +1,62 @@
+name: "userpforile build&test"
+
+on:
+  # pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - "apis/userprofile/**"
+      - ".github/workflows/**"
+
+env:
+  WORKING_DIRECTORY: "apis/userprofile"
+
+defaults:
+  run:
+    shell: bash
+    working-directory: "apis/userprofile"
+
+jobs:
+  buildtest:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      # Initialize, execute test
+      - name: npm init
+        run: npm ci
+      - name: npm test
+        run: npm run test
+
+      # Report test resuls
+      - name: Report test results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Unit test results
+          path: ${{ env.WORKING_DIRECTORY }}/reports/*.xml
+          reporter: java-junit
+
+      # If it encounts error, creates issue and comments to PR.
+      - name: Comment PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.number }}
+          body: |
+            ## Unit test failure
+            Workflow details
+            * Workflow name: ${{ github.workflow }}
+            * Action: ${{ github.event_name }}
+            * Job: ${{ github.job }}
+            * PR: ${{ github.event.number }}
+
+            Test details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            Pusher: ${{ github.actor }}
