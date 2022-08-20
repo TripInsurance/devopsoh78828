@@ -40,6 +40,7 @@ Test('/healthcheck/user', function (t) {
                 t.error(err);
                 t.ok(mock);
                 t.ok(mock.request);
+                t.equal(1, 2, 'cause error');
                 //Get the resolved path from mock request
                 //Mock request Path templates({}) are resolved using path parameters
                 request = Request(App)
