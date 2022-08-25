@@ -57,11 +57,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Azure CLI script
+      - name: Get sql password from KeyVault
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            SQL_PASSWORD= $(az keyvault secret show --vault-name ${{ steps.resources_prefix.outputs.result }}kv --name SQL-PASSWORD | jq '.value')
+            SQL_PASSWORD= $(az keyvault secret show --vault-name \"${{ steps.resources_prefix.outputs.result }}kv\" --name \"SQL-PASSWORD\" | jq '.value')
             echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
 
       - name: Terraform Plan
@@ -73,6 +73,7 @@ jobs:
             --detailed-exitcode \
             -var="location=${LOCATION}" \
             -var="resources_prefix=${{ steps.resources_prefix.outputs.result }}"
+            -var="mssql_server_administrator_login_password=${{ env.SQL_PASSWORD }}
           echo "::set-output name=exit_code::$?"
 
       - name: check exit code
