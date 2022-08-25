@@ -61,7 +61,7 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            SQL_PASSWORD="$(az keyvault secret show --vault-name \"${{ steps.resources_prefix.outputs.result }}kv\" --name \"SQL-PASSWORD\" | jq '.value')"
+            SQL_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.resources_prefix.outputs.result }}kv" --name "SQL-PASSWORD" | jq '.value')
             echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
       - name: Get Secrets from Azure Key Vault
         id: get_secrets_kv
