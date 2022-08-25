@@ -37,13 +37,11 @@ jobs:
           result-encoding: string
           script: return context.repo.repo.toLowerCase()
 
-      # Terraform setup
       - name: Terraform Setup
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
-      # Terraform init
       - name: Terraform Init
         run: |
           terraform init \
@@ -52,7 +50,6 @@ jobs:
             -backend-config=container_name="${{ secrets.TFSTATE_STORAGE_CONTAINER_NAME }}" \
             -backend-config=key="${{ secrets.TFSTATE_KEY }}"
 
-      # Terraform plan
       - name: Terraform Plan
         id: tfplan
         continue-on-error: true
@@ -64,7 +61,7 @@ jobs:
             -var="resources_prefix=${{ steps.resources_prefix.outputs.result }}"
           echo "::set-output name=exit_code::$?"
 
-      # Cehck terraform exit code
+        # Cehck terraform exit code
       - name: check exit code
         if: always()
         run: |
