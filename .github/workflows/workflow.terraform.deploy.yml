@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - "iac/terraform/**"
+      - ".github/workflows/**"
 
 env:
   LOCATION: ${{ secrets.LOCATION }}
