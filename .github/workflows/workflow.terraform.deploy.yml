@@ -57,18 +57,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # - name: Get sql password from KeyVault
-      #   uses: azure/CLI@v1
-      #   with:
-      #     inlineScript: |
-      #       SQL_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.resources_prefix.outputs.result }}kv" --name "SQL-PASSWORD" | jq '.value')
-      #       echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
-      - name: Get Secrets from Azure Key Vault
-        id: get_secrets_kv
-        uses: Azure/get-keyvault-secrets@v1
+      - name: Get sql password from KeyVault
+        uses: azure/CLI@v1
         with:
-          keyvault: "${{ steps.resources_prefix.outputs.result }}kv"
-          secrets: "SQL-PASSWORD"
+          inlineScript: |
+            SQL_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.resources_prefix.outputs.result }}kv" --name "SQL-PASSWORD" | jq '.value')
+            echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
 
       - name: Terraform Plan
         id: tfplan
@@ -79,7 +73,7 @@ jobs:
             --detailed-exitcode \
             -var="location=${LOCATION}" \
             -var="resources_prefix=${{ steps.resources_prefix.outputs.result }}" \
-            -var="mssql_server_administrator_login_password=${{ steps.get_secrets_kv.outputs.SQL-PASSWORD }}"
+            -var="mssql_server_administrator_login_password=${{ env.SQL_PASSWORD }}"
           echo "::set-output name=exit_code::$?"
 
       - name: check exit code
