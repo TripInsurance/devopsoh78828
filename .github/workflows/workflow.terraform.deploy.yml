@@ -29,6 +29,7 @@ jobs:
     outputs:
       RESOURCES_PREFIX: ${{ steps.resources_prefix.outputs.result }}
       TFPLAN_EXITCODE: ${{ steps.tfplan.outputs.exit_code }}
+      SQL_PASSWORD: ${{ steps.get_sql_password.outputs.password }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -59,10 +60,11 @@ jobs:
 
       - name: Get sql password from KeyVault
         uses: azure/CLI@v1
+        id: get_sql_password
         with:
           inlineScript: |
             SQL_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.resources_prefix.outputs.result }}kv" --name "SQL-PASSWORD" | jq '.value')
-            echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
+            echo "::set-output name=password::$SQL_PASSWORD"
 
       - name: Terraform Plan
         id: tfplan
@@ -73,7 +75,7 @@ jobs:
             --detailed-exitcode \
             -var="location=${LOCATION}" \
             -var="resources_prefix=${{ steps.resources_prefix.outputs.result }}" \
-            -var="mssql_server_administrator_login_password=${{ env.SQL_PASSWORD }}"
+            -var="mssql_server_administrator_login_password=${{ steps.get_sql_password.outputs.password }}"
           echo "::set-output name=exit_code::$?"
 
       - name: check exit code
@@ -112,6 +114,7 @@ jobs:
             -auto-approve \
             -var="location=${{ secrets.LOCATION }}" \
             -var="resources_prefix=${{ needs.preview.outputs.RESOURCES_PREFIX }}"
+            -var="mssql_server_administrator_login_password=${{ needs.preview.outputs.SQL_PASSWORD }}"
 
 
 
