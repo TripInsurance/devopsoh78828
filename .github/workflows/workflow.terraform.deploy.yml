@@ -61,7 +61,6 @@ jobs:
             -var="resources_prefix=${{ steps.resources_prefix.outputs.result }}"
           echo "::set-output name=exit_code::$?"
 
-        # Cehck terraform exit code
       - name: check exit code
         if: always()
         run: |
