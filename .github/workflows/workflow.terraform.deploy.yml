@@ -1,4 +1,4 @@
-name: "terraform deploy"
+name: "Deploy"
 
 on:
   pull_request:
@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "iac/terraform/**"
-  workflow_dispatch:
 
 env:
   LOCATION: ${{ secrets.LOCATION }}
