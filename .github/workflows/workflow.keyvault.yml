@@ -1,0 +1,59 @@
+name: "terraform deploy"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+
+env:
+  LOCATION: ${{ secrets.LOCATION }}
+  ARM_CLIENT_ID: "${{ secrets.ARM_CLIENT_ID }}"
+  ARM_CLIENT_SECRET: "${{ secrets.ARM_CLIENT_SECRET }}"
+  ARM_SUBSCRIPTION_ID: "${{ secrets.ARM_SUBSCRIPTION_ID }}"
+  ARM_TENANT_ID: "${{ secrets.ARM_TENANT_ID }}"
+  WORKDIR: "iac/terraform"
+
+defaults:
+  run:
+    shell: bash
+    working-directory: "iac/terraform"
+
+jobs:
+  preview:
+    name: Preview Changes
+    runs-on: ubuntu-latest
+    outputs:
+      RESOURCES_PREFIX: ${{ steps.resources_prefix.outputs.result }}
+      TFPLAN_EXITCODE: ${{ steps.tfplan.outputs.exit_code }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get repo name
+        uses: actions/github-script@v5
+        id: resources_prefix
+        with:
+          result-encoding: string
+          script: return context.repo.repo.toLowerCase()
+
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get sql password from KeyVault
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            SQL_PASSWORD=$(az keyvault secret show --vault-name "${{ steps.resources_prefix.outputs.result }}kv" --name "SQL-PASSWORD" | jq '.value')
+            echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
+
+      - name: Get Secrets from Azure Key Vault
+        id: get_secrets_kv
+        uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: "${{ steps.resources_prefix.outputs.result }}kv"
+          secrets: "SQL-PASSWORD"
+
