@@ -52,25 +52,17 @@ jobs:
             -backend-config=container_name="${{ secrets.TFSTATE_STORAGE_CONTAINER_NAME }}" \
             -backend-config=key="${{ secrets.TFSTATE_KEY }}"
 
-      # Login to Azure with Service Principal
       - name: Azure Login
         uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Get SQL-PASSWORD from Key Vault
-      - name: Get Secrets from Azure Key Vault
-        id: get_secrets_kv
-        uses: Azure/get-keyvault-secrets@v1
+      - name: Azure CLI script
+        uses: azure/CLI@v1
         with:
-          keyvault: "${{ steps.resources_prefix.outputs.result }}kv"
-          secrets: "SQL-PASSWORD"
-    - name: Azure CLI script
-      uses: azure/CLI@v1
-      with:
-        inlineScript: |
-          SQL_PASSWORD= $(az keyvault secret show -vault-name ${{ steps.resources_prefix.outputs.result }}kv --name SQL-PASSWORD | jq '.value')
-          echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
+          inlineScript: |
+            SQL_PASSWORD= $(az keyvault secret show -vault-name ${{ steps.resources_prefix.outputs.result }}kv --name SQL-PASSWORD | jq '.value')
+            echo "SQL_PASSWORD=${SQL_PASSWORD}" >> $GITHUB_ENV
 
       - name: Terraform Plan
         id: tfplan
