@@ -10,3 +10,4 @@ locals {
     mssql_server_administrator_login_password = "demo!P@55w0rd123"
   }
 }
+
