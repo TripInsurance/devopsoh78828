@@ -1,4 +1,4 @@
-name: "Deploy"
+name: "terraform deploy"
 
 on:
   pull_request:
