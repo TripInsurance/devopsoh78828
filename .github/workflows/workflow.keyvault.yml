@@ -1,4 +1,4 @@
-name: "terraform deploy"
+name: "keyvault retrieve"
 
 on:
   push:
