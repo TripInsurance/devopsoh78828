@@ -113,7 +113,7 @@ jobs:
           terraform apply \
             -auto-approve \
             -var="location=${{ secrets.LOCATION }}" \
-            -var="resources_prefix=${{ needs.preview.outputs.RESOURCES_PREFIX }}"
+            -var="resources_prefix=${{ needs.preview.outputs.RESOURCES_PREFIX }}" \
             -var="mssql_server_administrator_login_password=${{ needs.preview.outputs.SQL_PASSWORD }}"
 
 
